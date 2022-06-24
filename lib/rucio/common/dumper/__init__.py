@@ -26,7 +26,9 @@ import gfal2
 import magic
 import requests
 import bz2
+import subprocess
 
+from rucio.common import exception
 from rucio.common import config
 from rucio.core.rse import get_rse_id, get_rse_protocols
 
@@ -303,3 +305,30 @@ def gfal_download(url, filename):
     '''
     with open(filename, 'w') as f:
         gfal_download_to_file(url, f)
+
+def gfal_copy(path, dest):
+    """
+    Provides access to files stored inside connected the RSE.
+
+    :param path: Physical file name of requested file
+    :param dest: Name and path of the files when stored at the client
+
+    :raises RucioException: Passthrough of gfal-copy error message.
+    """
+    logger = logging.getLogger('dumper.__init__')
+
+    dest = os.path.abspath(dest)
+    if ':' not in dest:
+        dest = "file://" + dest
+
+    cmd = 'gfal-copy -vf -p %s %s' % (path, dest)
+    logger.debug('Command: ' + cmd)
+    cmd = cmd.split()
+
+    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    stdout, stderr = p.communicate()
+
+    if p.returncode:
+        logger.debug('Error STDOUT: ' + str(stdout))
+        logger.debug('Error STDERR: ' + str(stderr))
+        raise exception.RucioException(str(stderr))

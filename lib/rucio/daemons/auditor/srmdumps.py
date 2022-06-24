@@ -15,7 +15,7 @@
 
 from rucio.common.config import get_config_dirs
 from rucio.common.dumper import DUMPS_CACHE_DIR
-from rucio.common.dumper import http_download_to_file, gfal_download_to_file, ddmendpoint_url, temp_file
+from rucio.common.dumper import http_download_to_file, gfal_download_to_file, ddmendpoint_url, temp_file, gfal_copy
 
 try:
     import ConfigParser
@@ -261,8 +261,11 @@ def download_rse_dump(rse, configuration, date='latest', destdir=DUMPS_CACHE_DIR
 
     if not os.path.exists(path):
         logger.debug('Trying to download: "%s"', url)
-        with temp_file(destdir, final_name=filename) as (f, _):
-            download(url, f)
+        try:
+            with temp_file(destdir, final_name=filename) as (f, _):
+                download(url, f)
+        except UnicodeDecodeError as e:
+            gfal_copy(url,path)
 
     return (path, date)
 
