@@ -1,0 +1,60 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+# Copyright European Organization for Nuclear Research (CERN) since 2012
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+'''
+Auditor2 Daemon : consistency checks #TODO fill me
+'''
+
+import argparse
+import signal
+
+
+from rucio.daemons.auditor2.auditor2 import run, stop
+
+
+def get_parser():  # @TODO fill me
+    """
+    Returns the argparse parser.
+    """
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--threads", action="store", default=1, type=int,
+                        help='Concurrency control: number of threads')
+    parser.add_argument("--run-once", action="store_true", default=False,
+                        help='Runs one loop iteration')
+    parser.add_argument('--sleep-time', action="store", default=60, type=int,
+                        help='Minimum time between 2 consecutive cycles')
+    parser.add_argument('--rses', nargs='+', type=str,
+                        help='Explicit list of RSEs to include. If empty, it considers all RSEs')
+    parser.add_argument('--include-rses', action="store", default=None, type=str,
+                        help='RSE expression to include')
+    parser.add_argument('--exclude-rses', action="store", default=None, type=str,
+                        help='RSE expression to exclude')
+    parser.add_argument('--vos', nargs='+', type=str,
+                        help='Optional list of VOs to consider. Only used in multi-VO mode.')
+
+    return parser
+
+
+if __name__ == "__main__":
+
+    # Bind our callback to the SIGTERM signal and run the daemon:
+    signal.signal(signal.SIGTERM, stop)
+
+    args = get_parser().parse_args()
+    try:
+        run(threads=args.threads)  # @TODO fill me
+    except KeyboardInterrupt:
+        stop()
