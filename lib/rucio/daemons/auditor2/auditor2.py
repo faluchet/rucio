@@ -22,7 +22,7 @@ import logging
 import os
 import threading
 
-# from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 from rucio.common.exception import (RSENotFound,
                                     VONotFound)
@@ -36,14 +36,14 @@ from rucio.core.rse_expression_parser import parse_expression
 from rucio.daemons.common import run_daemon
 
 
-# if TYPE_CHECKING:
-from typing import Optional
-#     from rucio.daemons.common import HeartbeatHandler
+if TYPE_CHECKING:
+    from typing import List, Dict, TypedDict, Optional, Any
+    from rucio.daemons.common import HeartbeatHandler
 
 GRACEFUL_STOP = threading.Event()
 
 
-def get_rses_to_process(rses: "Optional[list[str]]", include_rses: "Optional[str]", exclude_rses: "Optional[str]", vos: "Optional[list[str]]" = None) -> "list[dict]":
+def get_rses_to_process(rses: List[str], include_rses: str, exclude_rses: str, vos: List[str]) -> List[Dict]:
     """
     Return the list of RSEs to process based on rses, include_rses and exclude_rses
 
@@ -101,7 +101,7 @@ def get_rses_to_process(rses: "Optional[list[str]]", include_rses: "Optional[str
     return result
 
 
-def auditor2(rses: "Optional[list[str]]", include_rses: "Optional[str]", exclude_rses: "Optional[str]", vos: "Optional[list[str]]" = None, once: bool = False, sleep_time: int = 60):
+def auditor2(rses: List[str], include_rses: str, exclude_rses: str, vos: List[str], once: bool = False, sleep_time: int = 60) -> None:
     """
     Main loop to ...  # @TODO fill me
 
@@ -137,9 +137,9 @@ def auditor2(rses: "Optional[list[str]]", include_rses: "Optional[str]", exclude
     )
 
 
-def run_once(rses, include_rses, exclude_rses, vos, heartbeat_handler, **_kwargs) -> bool:
+def run_once(rses: List[str], include_rses: str, exclude_rses: str, vos: List[str], heartbeat_handler: HeartbeatHandler, **_kwargs: TypedDict) -> bool:
 
-    def _run_once(rses_to_process, heartbeat_handler, **_kwargs):
+    def _run_once(rses_to_process: List[RseData], heartbeat_handler: HeartbeatHandler, **_kwargs: TypedDict) -> List:  # @TODO fill type hint
 
         _, total_workers, logger = heartbeat_handler.live()
         for rse in rses_to_process:
@@ -176,15 +176,15 @@ def run_once(rses, include_rses, exclude_rses, vos, heartbeat_handler, **_kwargs
     return must_sleep
 
 
-def stop(signum=None, frame=None):
+def stop(signum: Optional[Any] = None, frame: Optional[Any] = None) -> None:
     """
     Graceful exit.
     """
     GRACEFUL_STOP.set()
 
 
-# @TODO check 'vos' type
-def run(threads: int = 1, once: bool = False, sleep_time: int = 60, rses: "Optional[list[str]]" = None, include_rses: "Optional[str]" = None, exclude_rses: "Optional[str]" = None, vos: "Optional[list[str]]" = None):
+# @TODO double-check the type of 'vos'
+def run(rses: List[str], include_rses: str, exclude_rses: str, vos: List[str], once: bool = False, sleep_time: int = 60, threads: int = 1) -> None:
     """
     Starts up the auditor2 threads.
 

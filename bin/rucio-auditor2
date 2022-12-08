@@ -25,7 +25,8 @@ import signal
 from rucio.daemons.auditor2.auditor2 import run, stop
 
 
-def get_parser():  # @TODO fill me
+# @TODO consider using a rse_expression for he --rses argument
+def get_parser() -> argparse.ArgumentParser:
     """
     Returns the argparse parser.
     """
@@ -55,6 +56,12 @@ if __name__ == "__main__":
 
     args = get_parser().parse_args()
     try:
-        run(threads=args.threads)  # @TODO fill me
+        run(threads=args.threads,
+            once=args.run_once,
+            sleep_time=args.sleep_time,
+            rses=args.rses,
+            include_rses=args.include_rses,
+            exclude_rses=args.exclude_rses,
+            vos=args.vos)
     except KeyboardInterrupt:
         stop()
